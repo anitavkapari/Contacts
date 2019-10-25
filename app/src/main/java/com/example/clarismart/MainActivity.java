@@ -1,5 +1,6 @@
 package com.example.clarismart;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,12 +14,15 @@ import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,11 +34,14 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     ArrayList<Contacts> selectUsers;
     private RecyclerView recyclerView;
+    public  LinearLayoutManager manager;
     private RecyclerView.LayoutManager layoutManager;
     RecyclerAdapter adapter;
+    ProgressBar progressBar;
     Cursor phones;
     private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
-
+    Boolean isScrolling = false;
+    int currentItem, totalItem,scrollItem;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,9 +49,10 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView = (RecyclerView) findViewById(R.id.contacts_list);
         recyclerView.setHasFixedSize(true);
-
+         progressBar = (ProgressBar)findViewById(R.id.progressBar);
         recyclerView.setLayoutManager(layoutManager);
         selectUsers = new ArrayList<Contacts>();
+         manager = new LinearLayoutManager(this);
 
         showContacts();
     }
@@ -131,11 +139,51 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             contacts.addAll(removed);
+
             selectUsers=contacts;
             adapter = new RecyclerAdapter(inflater, selectUsers);
             recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
             recyclerView.setAdapter(adapter);
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                    if(newState== AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL)
+                    {
+                        isScrolling = true;
+                    }
+                }
 
+                @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    currentItem = manager.getChildCount();
+                    totalItem = manager.getItemCount();
+                    scrollItem = manager.findFirstVisibleItemPosition();
+
+                    if (isScrolling && currentItem + scrollItem == totalItem)
+                    {
+                        //data fetch
+                        isScrolling =false;
+                        fetchData();
+                    }
+                }
+            });
+        }
+
+        private void fetchData() {
+            progressBar.setVisibility(View.VISIBLE);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < 10; i++) {
+                        selectUsers.remove(selectUsers.size() - 1);
+                        // adapter.notifyDataSetChanged();
+                        adapter.notifyDataSetChanged();
+                        progressBar.setVisibility(View.GONE);
+                    }
+                }
+            }, 5000);
         }
     }
 
