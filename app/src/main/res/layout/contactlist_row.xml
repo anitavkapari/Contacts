@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:padding="20dp"
     android:id="@+id/contact_select_layout"
     android:layout_height="wrap_content">
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginRight="10dp"
+        app:civ_border_width="2dp"
+        app:civ_border_color="#FF000000"
         android:src="@drawable/ic_person_black_24dp"
         android:id="@+id/persion"
         />
